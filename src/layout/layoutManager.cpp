@@ -96,15 +96,18 @@ namespace sp {
         return bounds;
     }
 
-    void LayoutManager::positionChildInRow(std::shared_ptr<sp::IDynamicComponent> child, sf::FloatRect &bounds, const sf::Vector2f &parentSize, const sf::FloatRect &parentPadding, float &currentX, float &currentY, float &maxHeight, const sf::FloatRect &margin)
+    void LayoutManager::positionChildInRow(float &currentX, float &currentY, const sf::FloatRect &bounds, const sf::Vector2f &parentSize, const sf::FloatRect &parentPadding, const sf::FloatRect &margin, float &maxHeight, std::vector<std::vector<std::shared_ptr<sp::IDynamicComponent>>> &grid, std::vector<std::shared_ptr<sp::IDynamicComponent>> &currentRow, std::shared_ptr<sp::IDynamicComponent> child)
     {
         if (currentX + bounds.width > parentSize.x + parentPadding.left) {
             currentX = parentPadding.left + margin.left;
             currentY += maxHeight;
             maxHeight = 0;
+            grid.emplace_back(currentRow);
+            currentRow.clear();
         }
 
         child->setAbsolutePosition({ currentX, currentY });
+        currentRow.emplace_back(child);
 
         currentX += bounds.width;
 
@@ -112,20 +115,222 @@ namespace sp {
             maxHeight = bounds.height;
     }
 
-    void LayoutManager::positionChildInColumn(std::shared_ptr<sp::IDynamicComponent> child, sf::FloatRect &bounds, const sf::Vector2f &parentSize, const sf::FloatRect &parentPadding, float &currentX, float &currentY, float &maxWidth, const sf::FloatRect &margin)
+    void LayoutManager::positionChildInColumn(float &currentX, float &currentY, const sf::FloatRect &bounds, const sf::Vector2f &parentSize, const sf::FloatRect &parentPadding, const sf::FloatRect &margin, float &maxWidth, std::vector<std::vector<std::shared_ptr<sp::IDynamicComponent>>> &grid, std::vector<std::shared_ptr<sp::IDynamicComponent>> &currentRow, std::shared_ptr<sp::IDynamicComponent> child)
     {
         if (currentY + bounds.height > parentSize.y + parentPadding.top) {
             currentY = parentPadding.top + margin.top;
             currentX += maxWidth;
             maxWidth = 0;
+            grid.emplace_back(currentRow);
+            currentRow.clear();
         }
 
         child->setAbsolutePosition({ currentX, currentY });
+        currentRow.emplace_back(child);
 
         currentY += bounds.height;
 
         if (bounds.width > maxWidth)
             maxWidth = bounds.width;
+    }
+
+    void LayoutManager::getDimensionsForGridAlignment(bool isRow, std::vector<float> &totalWidths, std::vector<float> &totalHeights, std::vector<std::vector<std::shared_ptr<sp::IDynamicComponent>>> &grid, const sf::Vector2f &parentSize)
+    {
+        if (isRow) {
+            totalWidths.reserve(grid.size());
+            totalHeights.push_back(0);
+
+            for (std::size_t i = 0; i < grid.size(); ++i) {
+                totalWidths.push_back(0);
+            }
+        } else {
+            totalWidths.push_back(0);
+            totalHeights.reserve(grid.size());
+
+            for (std::size_t i = 0; i < grid.size(); ++i) {
+                totalHeights.push_back(0);
+            }
+        }
+
+        unsigned int y = 0;
+        std::vector<float> maxHeightIte;
+        std::vector<float> maxWidthIte;
+
+        for (auto &row : grid) {
+            float maxColumnWidth = 0;
+            float maxRowHeight = 0;
+
+            for (auto &child : row) {
+                sf::FloatRect bounds = calculateChildBounds(child, parentSize);
+
+                if (isRow) {
+                    totalWidths[y] += bounds.width;
+                    maxRowHeight = std::max(maxRowHeight, bounds.height);
+                } else {
+                    totalHeights[y] += bounds.height;
+                    maxColumnWidth = std::max(maxColumnWidth, bounds.width);
+                }
+            }
+
+            maxWidthIte.push_back(maxColumnWidth);
+            maxHeightIte.push_back(maxRowHeight);
+            y++;
+        }
+
+        if (isRow) {
+            totalHeights[0] = std::accumulate(maxHeightIte.begin(), maxHeightIte.end(), 0.0f);
+        } else {
+            totalWidths[0] = std::accumulate(maxWidthIte.begin(), maxWidthIte.end(), 0.0f);
+        }
+    }
+
+    void LayoutManager::applyHorizontalGridAlignment(bool isRow, std::vector<std::vector<std::shared_ptr<sp::IDynamicComponent>>> &grid, const std::vector<float> &totalWidths, const sf::Vector2f &parentSize, AlignMode horizontalAlign)
+    {
+        if (isRow) {
+            for (std::size_t rowIndex = 0; rowIndex < grid.size(); rowIndex++) {
+                auto &row = grid[rowIndex];
+                float totalWidth = totalWidths[rowIndex];
+                float extraSpace = parentSize.x - totalWidth;
+                float offset = 0;
+                float currentOffset = 0;
+
+                switch (horizontalAlign) {
+                    case AlignMode::SPACE_AROUND:
+                        offset = extraSpace / (row.size() * 2);
+                        currentOffset = offset;
+                        break;
+                    case AlignMode::SPACE_EVENLY:
+                        offset = extraSpace / (row.size() + 1);
+                        currentOffset = offset;
+                        break;
+                    case AlignMode::SPACE_BETWEEN:
+                        offset = extraSpace / (row.size() - 1);
+                        break;
+                    default:
+                        break;
+                }
+
+                for (auto &child : row) {
+                    sf::Vector2f position = child->getPosition();
+
+                    position.x += currentOffset;
+                    child->setAbsolutePosition(position);
+                    currentOffset += horizontalAlign == AlignMode::SPACE_AROUND ? offset * 2 : offset;
+                }
+            }
+        } else {
+            float totalWidth = totalWidths[0];
+            float extraSpace = parentSize.x - totalWidth;
+            float offset = 0;
+            float currentOffset = 0;
+
+            switch (horizontalAlign) {
+                case AlignMode::SPACE_AROUND:
+                    offset = extraSpace / (grid.size() * 2);
+                    currentOffset = offset;
+                    break;
+                case AlignMode::SPACE_EVENLY:
+                    offset = extraSpace / (grid.size() + 1);
+                    currentOffset = offset;
+                    break;
+                case AlignMode::SPACE_BETWEEN:
+                    offset = extraSpace / (grid.size() - 1);
+                    break;
+                default:
+                    break;
+            }
+
+            for (auto &row : grid) {
+                for (auto &child : row) {
+                    sf::Vector2f position = child->getPosition();
+
+                    position.x += currentOffset;
+                    child->setAbsolutePosition(position);
+                }
+
+                currentOffset += horizontalAlign == AlignMode::SPACE_AROUND ? offset * 2 : offset;
+            }
+        }
+    }
+
+    void LayoutManager::applyVerticalGridAlignment(bool isRow, std::vector<std::vector<std::shared_ptr<sp::IDynamicComponent>>> &grid, const std::vector<float> &totalHeights, const sf::Vector2f &parentSize, AlignMode verticalAlign)
+    {
+        if (isRow) {
+            float totalHeight = totalHeights[0];
+            float extraSpace = parentSize.y - totalHeight;
+            float offset = 0;
+            float currentOffset = 0;
+
+            switch (verticalAlign) {
+                case AlignMode::SPACE_AROUND:
+                    offset = extraSpace / (grid.size() * 2);
+                    currentOffset = offset;
+                    break;
+                case AlignMode::SPACE_EVENLY:
+                    offset = extraSpace / (grid.size() + 1);
+                    currentOffset = offset;
+                    break;
+                case AlignMode::SPACE_BETWEEN:
+                    offset = extraSpace / (grid.size() - 1);
+                    break;
+                default:
+                    break;
+            }
+
+            for (auto &row : grid) {
+                for (auto &child : row) {
+                    sf::Vector2f position = child->getPosition();
+
+                    position.y += currentOffset;
+                    child->setAbsolutePosition(position);
+                }
+
+                currentOffset += verticalAlign == AlignMode::SPACE_AROUND ? offset * 2 : offset;
+            }
+        } else {
+            for (std::size_t rowIndex = 0; rowIndex < grid.size(); rowIndex++) {
+                auto &column = grid[rowIndex];
+                float totalHeight = totalHeights[rowIndex];
+                float extraSpace = parentSize.y - totalHeight;
+                float offset = 0;
+                float currentOffset = 0;
+
+                switch (verticalAlign) {
+                    case AlignMode::SPACE_AROUND:
+                        offset = extraSpace / (column.size() * 2);
+                        currentOffset = offset;
+                        break;
+                    case AlignMode::SPACE_EVENLY:
+                        offset = extraSpace / (column.size() + 1);
+                        currentOffset = offset;
+                        break;
+                    case AlignMode::SPACE_BETWEEN:
+                        offset = extraSpace / (column.size() - 1);
+                        break;
+                    default:
+                        break;
+                }
+
+                for (auto &child : column) {
+                    sf::Vector2f position = child->getPosition();
+
+                    position.y += currentOffset;
+                    child->setAbsolutePosition(position);
+                    currentOffset += verticalAlign == AlignMode::SPACE_AROUND ? offset * 2 : offset;
+                }
+            }
+        }
+    }
+
+    void LayoutManager::applyGridAlignment(LayoutDirection direction, std::vector<std::vector<std::shared_ptr<sp::IDynamicComponent>>> &grid, const sf::Vector2f &parentSize, AlignMode horizontalAlign, AlignMode verticalAlign)
+    {
+        bool isRow = direction == LayoutDirection::ROW;
+        std::vector<float> totalWidths;
+        std::vector<float> totalHeights;
+
+        getDimensionsForGridAlignment(isRow, totalWidths, totalHeights, grid, parentSize);
+        applyHorizontalGridAlignment(isRow, grid, totalWidths, parentSize, horizontalAlign);
+        applyVerticalGridAlignment(isRow, grid, totalHeights, parentSize, verticalAlign);
     }
 
     void LayoutManager::automaticChildrenOrdering(std::shared_ptr<sp::Container> container)
@@ -134,25 +339,38 @@ namespace sp {
             return;
 
         sf::Vector2f parentSize = getComponentAvailableSize(container);
+        LayoutDirection direction = static_cast<LayoutDirection>(container->getPropertySettings(PropertyLabel::LAYOUT_DIRECTION).value);
+        sf::FloatRect parentPadding = getComponentPadding(container, container->getSize());
+        AlignMode horizontalAlign = static_cast<AlignMode>(container->getPropertySettings(PropertyLabel::HORIZONTAL_ALIGN).value);
+        AlignMode verticalAlign = static_cast<AlignMode>(container->getPropertySettings(PropertyLabel::VERTICAL_ALIGN).value);
+
         float baseX = container->_children[0]->getPosition().x;
         float baseY = container->_children[0]->getPosition().y;
         float currentX = baseX;
         float currentY = baseY;
         float maxHeight = 0;
         float maxWidth = 0;
-        LayoutDirection direction = static_cast<LayoutDirection>(container->getPropertySettings(PropertyLabel::LAYOUT_DIRECTION).value);
-        sf::FloatRect parentPadding = getComponentPadding(container, container->getSize());
+
+        std::vector<std::vector<std::shared_ptr<sp::IDynamicComponent>>> grid;
+        std::vector<std::shared_ptr<sp::IDynamicComponent>> currentRow;
 
         for (auto &child : container->_children) {
             sf::FloatRect bounds = calculateChildBounds(child, parentSize);
             sf::FloatRect margin = getComponentMargin(child, parentSize);
 
             if (direction == LayoutDirection::ROW) {
-                positionChildInRow(child, bounds, parentSize, parentPadding, currentX, currentY, maxHeight, margin);
+                positionChildInRow(currentX, currentY, bounds, parentSize, parentPadding, margin, maxHeight, grid, currentRow, child);
             } else {
-                positionChildInColumn(child, bounds, parentSize, parentPadding, currentX, currentY, maxWidth, margin);
+                positionChildInColumn(currentX, currentY, bounds, parentSize, parentPadding, margin, maxWidth, grid, currentRow, child);
             }
         }
+
+        grid.emplace_back(currentRow);
+
+        if (horizontalAlign == AlignMode::NONE && verticalAlign == AlignMode::NONE)
+            return;
+
+        applyGridAlignment(direction, grid, parentSize, horizontalAlign, verticalAlign);
     }
 
     sf::FloatRect LayoutManager::getComponentParentRect(std::shared_ptr<sp::IDynamicComponent> component)

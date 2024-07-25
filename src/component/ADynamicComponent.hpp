@@ -32,8 +32,8 @@ namespace sp {
             void setXTranslation(float offset, PropertyUnit unit = PropertyUnit::PX);
             void setYTranslation(float offset, PropertyUnit unit = PropertyUnit::PX);
             void setLayoutDirection(LayoutDirection direction);
-            void setHorizontalAlign(LayoutAlignMode mode);
-            void setVerticalAlign(LayoutAlignMode mode);
+            void setHorizontalAlign(AlignMode mode);
+            void setVerticalAlign(AlignMode mode);
 
         public:
             void setPadding(float value, PropertyUnit unit = PropertyUnit::PX);

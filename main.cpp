@@ -24,9 +24,9 @@ void testComponents(std::unique_ptr<sp::Engine> &app)
     subContainer->setPadding(20.0f);
     subContainer->setMargin({ 50.0f, 50.0f, 0, 0 }, { PropertyUnit::PERC, PropertyUnit::PERC, PropertyUnit::PX, PropertyUnit::PX });
     subContainer->setTranslation({ -50.0f, -50.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
-    subContainer->setLayoutDirection(LayoutDirection::ROW);
-    subContainer->setHorizontalAlign(LayoutAlignMode::SPACE_BETWEEN);
-    subContainer->setVerticalAlign(LayoutAlignMode::SPACE_AROUND);
+    subContainer->setLayoutDirection(LayoutDirection::COLUMN);
+    subContainer->setHorizontalAlign(AlignMode::SPACE_BETWEEN);
+    subContainer->setVerticalAlign(AlignMode::SPACE_BETWEEN);
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 5; x++) {

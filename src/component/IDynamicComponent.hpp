@@ -25,7 +25,7 @@ namespace sp {
         ABSOLUTE
     };
 
-    enum class LayoutAlignMode {
+    enum class AlignMode {
         NONE,
         SPACE_BETWEEN,
         SPACE_EVENLY,
@@ -88,8 +88,8 @@ namespace sp {
             virtual void setXTranslation(float offset, PropertyUnit unit = PropertyUnit::PX) = 0;
             virtual void setYTranslation(float offset, PropertyUnit unit = PropertyUnit::PX) = 0;
             virtual void setLayoutDirection(LayoutDirection direction) = 0;
-            virtual void setHorizontalAlign(LayoutAlignMode mode) = 0;
-            virtual void setVerticalAlign(LayoutAlignMode mode) = 0;
+            virtual void setHorizontalAlign(AlignMode mode) = 0;
+            virtual void setVerticalAlign(AlignMode mode) = 0;
 
         public:
             virtual void setPadding(float value, PropertyUnit unit = PropertyUnit::PX) = 0;

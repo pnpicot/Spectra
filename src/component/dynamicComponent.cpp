@@ -79,8 +79,8 @@ namespace sp {
         _properties[PropertyLabel::POSITION].value = static_cast<float>(PositionMode::RELATIVE);
         _properties[PropertyLabel::LAYOUT_MODE].layoutMode = LayoutMode::DEFAULT;
         _properties[PropertyLabel::LAYOUT_DIRECTION].value = static_cast<float>(LayoutDirection::ROW);
-        _properties[PropertyLabel::HORIZONTAL_ALIGN].value = static_cast<float>(LayoutAlignMode::NONE);
-        _properties[PropertyLabel::VERTICAL_ALIGN].value = static_cast<float>(LayoutAlignMode::NONE);
+        _properties[PropertyLabel::HORIZONTAL_ALIGN].value = static_cast<float>(AlignMode::NONE);
+        _properties[PropertyLabel::VERTICAL_ALIGN].value = static_cast<float>(AlignMode::NONE);
 
         std::vector<PropertyLabel> zeroPxProperties = {
             PropertyLabel::PADDING_LEFT,
@@ -275,12 +275,12 @@ namespace sp {
         _properties[PropertyLabel::LAYOUT_DIRECTION].value = static_cast<float>(direction);
     }
 
-    void ADynamicComponent::setHorizontalAlign(LayoutAlignMode mode)
+    void ADynamicComponent::setHorizontalAlign(AlignMode mode)
     {
         _properties[PropertyLabel::HORIZONTAL_ALIGN].value = static_cast<float>(mode);
     }
 
-    void ADynamicComponent::setVerticalAlign(LayoutAlignMode mode)
+    void ADynamicComponent::setVerticalAlign(AlignMode mode)
     {
         _properties[PropertyLabel::VERTICAL_ALIGN].value = static_cast<float>(mode);
     }
