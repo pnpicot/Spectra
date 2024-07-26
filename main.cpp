@@ -32,16 +32,16 @@ void testComponents(std::unique_ptr<sp::Engine> &app)
     subContainer->setHorizontalAlign(AlignMode::SPACE_AROUND);
     subContainer->setVerticalAlign(AlignMode::SPACE_AROUND);
 
-    std::shared_ptr<sp::Text> text = std::make_shared<sp::Text>("mytext");
+    std::shared_ptr<sp::Text> text = std::make_shared<sp::Text>("mytext", app->getWindowSizePtr());
 
     assetsManager->loadFont("roboto", "assets/fonts/Roboto-Regular.ttf");
     text->setText("Hello World!");
+    text->setFontSize(35, { Units::NONE });
     text->setFont(assetsManager->getFont("roboto"));
     text->setTextColor(sf::Color::White);
     text->resize({ 50.0f, 50.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
     text->setMargin({ 50.0f, 50.0f, 0, 0 }, { PropertyUnit::PERC, PropertyUnit::PERC });
     text->setTranslation({ -50.0f, -50.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
-    text->setFontSize(35);
     text->setBackgroundColor(sf::Color(255, 255, 255, 30));
     text->setHorizontalAlign(TextAlign::CENTER);
     text->setVerticalAlign(TextAlign::CENTER);

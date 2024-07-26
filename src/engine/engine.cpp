@@ -216,4 +216,9 @@ namespace sp {
     {
         return _assetsManager;
     }
+
+    sf::Vector2f *Engine::getWindowSizePtr()
+    {
+        return &_windowSize;
+    }
 }

@@ -2,6 +2,8 @@
 
 #include "../ADynamicComponent.hpp"
 #include <cmath>
+#include "../../layout/unitsEnums.hpp"
+#include "../../layout/units.hpp"
 
 namespace sp {
     enum class TextAlign {
@@ -12,7 +14,7 @@ namespace sp {
 
     class Text: public ADynamicComponent {
         public:
-            Text(std::string id);
+            Text(std::string id, sf::Vector2f *windowSize = nullptr);
             ~Text() = default;
 
         public:
@@ -28,8 +30,8 @@ namespace sp {
         public:
             void setFont(const sf::Font &font);
             const sf::Font *getFont() const;
-            void setFontSize(unsigned int size);
-            unsigned int getFontSize() const;
+            void setFontSize(float size, Units unit = Units::NONE);
+            float getFontSize() const;
             void setTextColor(const sf::Color &color);
             const sf::Color &getTextColor() const;
             void setText(const std::string &string);
@@ -47,9 +49,15 @@ namespace sp {
 
         private:
             std::unique_ptr<sf::RectangleShape> _rect;
-            std::unique_ptr<sf::Text> _text;
+            std::shared_ptr<sf::Text> _text;
             TextAlign _horizontalAlign;
             TextAlign _verticalAlign;
             sf::FloatRect _textSize;
+            Units _sizeUnit;
+            float _adaptiveSize;
+            sf::Vector2f *_windowSize;
+            float _initialTop;
+            float _initialLeft;
+            unsigned int _initialSize;
     };
 }

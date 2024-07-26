@@ -1,13 +1,15 @@
 #include "text.hpp"
 
 namespace sp {
-    Text::Text(std::string id) : ADynamicComponent(id)
+    Text::Text(std::string id, sf::Vector2f *windowSize) : ADynamicComponent(id), _windowSize(windowSize)
     {
         _rect = std::make_unique<sf::RectangleShape>();
-        _text = std::make_unique<sf::Text>();
+        _text = std::make_shared<sf::Text>();
         _horizontalAlign = TextAlign::CENTER;
         _verticalAlign = TextAlign::CENTER;
         _textSize = { 0, 0, 0, 0 };
+        _sizeUnit = Units::NONE;
+        _adaptiveSize = 0;
 
         // TODO: automatically reposition text (cache the text bounds when you can, don't always recalculate it)
 
@@ -17,6 +19,8 @@ namespace sp {
         }
 
         _rect->setFillColor(sf::Color::Transparent);
+        _initialTop = 0;
+        _initialLeft = 0;
     }
 
     void Text::render(std::shared_ptr<sf::RenderWindow> window)
@@ -107,6 +111,26 @@ namespace sp {
             return;
 
         _text->setFont(font);
+
+        bool hasText = getText().size() > 0;
+        unsigned int oldSize = _text->getCharacterSize();
+
+        if (!hasText)
+            _text->setString("Placeholder");
+
+        _text->setCharacterSize(20);
+
+        sf::FloatRect bounds = _text->getGlobalBounds();
+
+        _initialTop = bounds.top;
+        _initialLeft = bounds.left;
+        _initialSize = 20;
+
+        if (!hasText)
+            _text->setString("");
+
+        _text->setCharacterSize(oldSize);
+
         updateTextSize();
     }
 
@@ -115,21 +139,26 @@ namespace sp {
         return _text->getFont();
     }
 
-    void Text::setFontSize(unsigned int size)
+    void Text::setFontSize(float size, Units unit)
     {
         if (!_text)
             return;
 
-        _text->setCharacterSize(size);
+        if (unit == Units::NONE)
+            _text->setCharacterSize(static_cast<unsigned int>(size));
+
+        _adaptiveSize = size;
+        _sizeUnit = unit;
+
         updateTextSize();
     }
 
-    unsigned int Text::getFontSize() const
+    float Text::getFontSize() const
     {
         if (!_text)
             return 0;
 
-        return _text->getCharacterSize();
+        return _adaptiveSize;
     }
 
     void Text::setTextColor(const sf::Color &color)
@@ -178,6 +207,8 @@ namespace sp {
         if (!_text)
             return;
 
+        UnitsHelper::updateTextSize(_size, _windowSize == nullptr ? sf::Vector2f(0, 0) : *_windowSize, _text, _sizeUnit, _adaptiveSize);
+
         _textSize = _text->getGlobalBounds();
     }
 
@@ -185,8 +216,16 @@ namespace sp {
     {
         if (!_text)
             return;
+        
+        if (_sizeUnit != Units::NONE)
+            updateTextSize();
 
         sf::Vector2f textPosition = { 0, 0 };
+
+        float charSize = static_cast<float>(_text->getCharacterSize());
+        float initSize = static_cast<float>(_initialSize);
+        float topOffset = _initialTop * (charSize / initSize);
+        float leftOffset = _initialLeft * (charSize / initSize);
 
         {
             // HORIZONTAL
@@ -196,7 +235,7 @@ namespace sp {
                     textPosition.x = _position.x;
                     break;
                 case TextAlign::END:
-                    textPosition.x = (_position.x + _size.x) - _textSize.width - _textSize.left;
+                    textPosition.x = (_position.x + _size.x) - _textSize.width - leftOffset;
                     break;
                 default:
                     textPosition.x = (_position.x + (_size.x / 2)) - (_textSize.width / 2);
@@ -212,10 +251,10 @@ namespace sp {
                     textPosition.y = _position.y;
                     break;
                 case TextAlign::END:
-                    textPosition.y = (_position.y + _size.y) - _textSize.height - _textSize.top;
+                    textPosition.y = (_position.y + _size.y) - _textSize.height - topOffset;
                     break;
                 default:
-                    textPosition.y = (_position.y + (_size.y / 2)) - (_textSize.height / 2) - _textSize.top;
+                    textPosition.y = (_position.y + (_size.y / 2)) - (_textSize.height / 2) - topOffset;
                     break;
             }
         }

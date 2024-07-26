@@ -36,6 +36,7 @@ namespace sp {
             const sf::Vector2i &getResolution() const;
             std::shared_ptr<sf::RenderWindow> &getWindow();
             std::shared_ptr<sp::AssetsManager> getAssetsManager() const;
+            sf::Vector2f *getWindowSizePtr();
 
         public:
             std::shared_ptr<sp::Container> createContainer(const std::string &containerId, bool fitWindow = true);
