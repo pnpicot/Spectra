@@ -2,6 +2,7 @@
 #include "src/helpers/componentHelper.hpp"
 #include "src/helpers/randomHelper.hpp"
 #include "src/component/rectangle/rectangle.hpp"
+#include "src/component/text/text.hpp"
 #include "src/helpers/debugHelper.hpp"
 
 void eventHandler(const sp::EventHandler::Event &event, sp::Engine *app)
@@ -19,6 +20,7 @@ void testComponents(std::unique_ptr<sp::Engine> &app)
     sf::Vector2i resolution = app->getResolution();
     std::shared_ptr<Container> mainContainer = app->getContainer(BASE_CONTAINER_ID);
     std::shared_ptr<Container> subContainer = ComponentHelper::createContainer("sub-container", resolution, resolution * 2);
+    std::shared_ptr<sp::AssetsManager> assetsManager = app->getAssetsManager();
 
     subContainer->resize({ 80.0f, 90.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
     subContainer->setBackgroundColor(sf::Color(40, 40, 40));
@@ -30,46 +32,21 @@ void testComponents(std::unique_ptr<sp::Engine> &app)
     subContainer->setHorizontalAlign(AlignMode::SPACE_AROUND);
     subContainer->setVerticalAlign(AlignMode::SPACE_AROUND);
 
-    for (int y = 0; y < 20; y++) {
-        for (int x = 0; x < 20; x++) {
-            if (x == 5 && y == 18) {
-                std::shared_ptr<Rectangle> newRectangle = std::make_shared<Rectangle>("rectangle" + std::to_string(x) + std::to_string(y));
+    std::shared_ptr<sp::Text> text = std::make_shared<sp::Text>("mytext");
 
-                newRectangle->resize({ 5.0f, 5.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
+    assetsManager->loadFont("roboto", "assets/fonts/Roboto-Regular.ttf");
+    text->setText("Hello World!");
+    text->setFont(assetsManager->getFont("roboto"));
+    text->setTextColor(sf::Color::White);
+    text->resize({ 50.0f, 50.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
+    text->setMargin({ 50.0f, 50.0f, 0, 0 }, { PropertyUnit::PERC, PropertyUnit::PERC });
+    text->setTranslation({ -50.0f, -50.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
+    text->setFontSize(35);
+    text->setBackgroundColor(sf::Color(255, 255, 255, 30));
+    text->setHorizontalAlign(TextAlign::CENTER);
+    text->setVerticalAlign(TextAlign::CENTER);
 
-                newRectangle->setBackgroundColor(sf::Color(
-                    RandomHelper::randInt(100, 255),
-                    RandomHelper::randInt(100, 255),
-                    RandomHelper::randInt(100, 255),
-                    200
-                ));
-
-                newRectangle->setBorderRadius(25.0f);
-
-                subContainer->appendComponent(newRectangle);
-
-                continue;
-            }
-
-            std::shared_ptr<Container> newContainer = ComponentHelper::createContainer(
-                "container-" + std::to_string(x) + std::to_string(y),
-                { 50, 50 },
-                { 50, 50 }
-            );
-
-            newContainer->resize({ 5.0f, 5.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
-
-            newContainer->setBackgroundColor(sf::Color(
-                RandomHelper::randInt(100, 255),
-                RandomHelper::randInt(100, 255),
-                RandomHelper::randInt(100, 255),
-                200
-            ));
-
-            subContainer->appendComponent(newContainer);
-        }
-    }
-
+    subContainer->appendComponent(text);
     mainContainer->appendComponent(subContainer);
 }
 

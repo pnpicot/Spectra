@@ -25,6 +25,7 @@ namespace sp {
         _targetFramerate = DEFAULT_FRAMERATE;
         _window = std::make_shared<sf::RenderWindow>();
         _eventHandler = std::make_shared<sp::EventHandler>(this);
+        _assetsManager = std::make_shared<sp::AssetsManager>();
         _windowSize = { (float) _resolution.x, (float) _resolution.y };
 
         createBaseContainer();
@@ -209,5 +210,10 @@ namespace sp {
         for (auto &container : _containers) {
             container->setRootWindowSize(_windowSize);
         }
+    }
+
+    std::shared_ptr<sp::AssetsManager> Engine::getAssetsManager() const
+    {
+        return _assetsManager;
     }
 }

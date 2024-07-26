@@ -6,6 +6,7 @@
 #include "../helpers/componentHelper.hpp"
 #include "../component/ADynamicComponent.hpp"
 #include "../layout/layoutManager.hpp"
+#include "../assets/assetsManager.hpp"
 #include "SFML/Graphics.hpp"
 #include <memory>
 #include <vector>
@@ -34,6 +35,7 @@ namespace sp {
             std::shared_ptr<sp::EventHandler> getEventHandler();
             const sf::Vector2i &getResolution() const;
             std::shared_ptr<sf::RenderWindow> &getWindow();
+            std::shared_ptr<sp::AssetsManager> getAssetsManager() const;
 
         public:
             std::shared_ptr<sp::Container> createContainer(const std::string &containerId, bool fitWindow = true);
@@ -57,6 +59,7 @@ namespace sp {
             sf::Vector2i _resolution;
             std::shared_ptr<sf::RenderWindow> _window;
             std::shared_ptr<sp::EventHandler> _eventHandler;
+            std::shared_ptr<sp::AssetsManager> _assetsManager;
             sf::Clock _clock;
             double _targetFramerate;
             std::vector<std::shared_ptr<sp::IDynamicComponent>> _containers;
