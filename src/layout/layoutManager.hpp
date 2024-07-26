@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../component/ADynamicComponent.hpp"
-#include "../container/container.hpp"
+#include "../component/container/container.hpp"
 #include <numeric>
 
 namespace sp {

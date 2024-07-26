@@ -24,6 +24,8 @@ namespace sp {
 
         sf::IntRect textureRect = { 0, 0, width, height };
 
+        // TODO: find a solution to render textures being too heavy on processor and storage (would it be possible to draw everything on a single texture but restrict the drawing area so there's no overflow ?)
+
         if (!_texture->create(width, height, ctxSettings)) {
             Logger::log(Logger::WARNING, "Could not allocate memory for container creation");
             return false;
@@ -46,7 +48,7 @@ namespace sp {
 
     void Container::setAbsoluteSize(sf::Vector2f size)
     {
-        _size = size;
+        _size = { (float) floor(size.x), (float) floor(size.y) };
 
         if (!_sprite)
             return;
@@ -61,7 +63,7 @@ namespace sp {
 
     void Container::setAbsolutePosition(sf::Vector2f position)
     {
-        _position = position;
+        _position = { (float) floor(position.x), (float) floor(position.y) };
 
         if (!_sprite)
             return;

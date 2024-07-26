@@ -3,9 +3,10 @@
 #include <string>
 #include <memory>
 #include "SFML/Graphics.hpp"
-#include "../logger/logger.hpp"
-#include "../component/ADynamicComponent.hpp"
-#include "../helpers/componentHelper.hpp"
+#include "../../logger/logger.hpp"
+#include "../ADynamicComponent.hpp"
+#include "../../helpers/componentHelper.hpp"
+#include <cmath>
 
 namespace sp {
     class Container: public ADynamicComponent {

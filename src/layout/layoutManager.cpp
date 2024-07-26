@@ -11,9 +11,7 @@ namespace sp {
         if (!recursive)
             return;
 
-        std::shared_ptr<sp::Container> container = std::dynamic_pointer_cast<sp::Container>(component);
-
-        if (container != nullptr) {
+        if (auto container = std::dynamic_pointer_cast<sp::Container>(component)) {
             for (auto &child : container->_children) {
                 updateDynamicComponent(child, true);
             }
@@ -46,7 +44,6 @@ namespace sp {
                 automaticChildrenOrdering(component);
                 break;
             default:
-                // ...
                 break;
         }
     }

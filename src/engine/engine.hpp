@@ -2,7 +2,7 @@
 
 #include "../logger/logger.hpp"
 #include "../event/event.hpp"
-#include "../container/container.hpp"
+#include "../component/container/container.hpp"
 #include "../helpers/componentHelper.hpp"
 #include "../component/ADynamicComponent.hpp"
 #include "../layout/layoutManager.hpp"

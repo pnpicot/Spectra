@@ -1,6 +1,8 @@
 #include "src/engine/engine.hpp"
 #include "src/helpers/componentHelper.hpp"
 #include "src/helpers/randomHelper.hpp"
+#include "src/component/rectangle/rectangle.hpp"
+#include "src/helpers/debugHelper.hpp"
 
 void eventHandler(const sp::EventHandler::Event &event, sp::Engine *app)
 {
@@ -24,18 +26,38 @@ void testComponents(std::unique_ptr<sp::Engine> &app)
     subContainer->setPadding(20.0f);
     subContainer->setMargin({ 50.0f, 50.0f, 0, 0 }, { PropertyUnit::PERC, PropertyUnit::PERC, PropertyUnit::PX, PropertyUnit::PX });
     subContainer->setTranslation({ -50.0f, -50.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
-    subContainer->setLayoutDirection(LayoutDirection::COLUMN);
-    subContainer->setHorizontalAlign(AlignMode::SPACE_BETWEEN);
-    subContainer->setVerticalAlign(AlignMode::SPACE_BETWEEN);
+    subContainer->setLayoutDirection(LayoutDirection::ROW);
+    subContainer->setHorizontalAlign(AlignMode::SPACE_AROUND);
+    subContainer->setVerticalAlign(AlignMode::SPACE_AROUND);
 
-    for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 5; x++) {
-            std::shared_ptr<Container> newContainer = ComponentHelper::createContainer("container-" + std::to_string(x) + std::to_string(y), resolution, resolution);
+    for (int y = 0; y < 20; y++) {
+        for (int x = 0; x < 20; x++) {
+            if (x == 5 && y == 18) {
+                std::shared_ptr<Rectangle> newRectangle = std::make_shared<Rectangle>("rectangle" + std::to_string(x) + std::to_string(y));
 
-            newContainer->resize({
-                RandomHelper::randFloat(60.0f, 230.0f),
-                RandomHelper::randFloat(80.0f, 260.0f)
-            });
+                newRectangle->resize({ 5.0f, 5.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
+
+                newRectangle->setBackgroundColor(sf::Color(
+                    RandomHelper::randInt(100, 255),
+                    RandomHelper::randInt(100, 255),
+                    RandomHelper::randInt(100, 255),
+                    200
+                ));
+
+                newRectangle->setBorderRadius(25.0f);
+
+                subContainer->appendComponent(newRectangle);
+
+                continue;
+            }
+
+            std::shared_ptr<Container> newContainer = ComponentHelper::createContainer(
+                "container-" + std::to_string(x) + std::to_string(y),
+                { 50, 50 },
+                { 50, 50 }
+            );
+
+            newContainer->resize({ 5.0f, 5.0f }, { PropertyUnit::PERC, PropertyUnit::PERC });
 
             newContainer->setBackgroundColor(sf::Color(
                 RandomHelper::randInt(100, 255),
@@ -44,7 +66,6 @@ void testComponents(std::unique_ptr<sp::Engine> &app)
                 200
             ));
 
-            // newContainer->setMargin({ RandomHelper::randFloat(0, 30.0f), RandomHelper::randFloat(0, 10.0f), 20.0f, 5.0f });
             subContainer->appendComponent(newContainer);
         }
     }
